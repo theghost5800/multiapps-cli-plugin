@@ -29,6 +29,7 @@ var Commands = []commands.Command{
 	&commands.MtaCommand{},
 	&commands.MtaOperationsCommand{},
 	&commands.PurgeConfigCommand{},
+	&commands.MtasLocalCommand{},
 }
 
 // Run runs this plugin
