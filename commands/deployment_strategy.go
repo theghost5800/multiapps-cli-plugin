@@ -11,11 +11,14 @@ type DeploymentStrategy interface {
 	CreateProcessBuilder() *util.ProcessBuilder
 }
 
-type DeployCommandDeploymentStrategy struct{}
+type DeployCommandDeploymentStrategy struct {
+	shouldApplyRollingUpdate bool
+}
 
 func (d *DeployCommandDeploymentStrategy) CreateProcessBuilder() *util.ProcessBuilder {
 	processBuilder := util.NewProcessBuilder()
 	processBuilder.ProcessType((deployCommandProcessTypeProvider{}).GetProcessType())
+	processBuilder.Parameter("shouldApplyRollingUpdate", strconv.FormatBool(d.shouldApplyRollingUpdate))
 	return processBuilder
 }
 
@@ -39,7 +42,10 @@ func NewDeploymentStrategy(flags *flag.FlagSet, typeProvider ProcessTypeProvider
 	}
 	strategy := GetStringOpt(strategyOpt, flags)
 	if strategy == "default" {
-		return &DeployCommandDeploymentStrategy{}
+		return &DeployCommandDeploymentStrategy{false}
+	}
+	if strategy == "rolling" {
+		return &DeployCommandDeploymentStrategy{true}
 	}
 	if GetBoolOpt(skipIdleStart, flags) {
 		return &BlueGreenDeployCommandDeploymentStrategy{true, true}
@@ -48,5 +54,5 @@ func NewDeploymentStrategy(flags *flag.FlagSet, typeProvider ProcessTypeProvider
 }
 
 func AvailableStrategies() []string {
-	return []string{"blue-green", "default"}
+	return []string{"blue-green", "default", "rolling"}
 }
